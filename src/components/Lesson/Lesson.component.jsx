@@ -10,9 +10,16 @@ import { timeIntervals, setIntervals, validatePresence, validateSelection } from
 
 const Lesson = () => {
   const [validForm, setValidForm] = useState(true);
-  const [errorList, setErrorList] = useState([]);
-  const [term, setTerm] = useState('');
-  const [courseNumber, setCourseNumber] = useState('');
+  const [term, setTerm] = useState({
+    name: 'term',
+    val: '',
+    error: ''
+  });
+  const [courseNumber, setCourseNumber] = useState({
+    name: 'course number',
+    val: '',
+    error: ''
+  });
   const [courseTitle, setCourseTitle] = useState('');
   const [faculty, setFaculty] = useState('');
   const [librarian, setLibrarian] = useState('');
@@ -24,7 +31,8 @@ const Lesson = () => {
 
   useEffect(() => {
     const updateCourseInfo = courseNumber => {
-      const thisCourse = courses.find(course => course.courseNumber === courseNumber);
+      const { val } = courseNumber;
+      const thisCourse = courses.find(course => course.courseNumber === val);
 
       if(thisCourse) {
         setCourseTitle(thisCourse.courseTitle)
@@ -45,55 +53,47 @@ const Lesson = () => {
     return courseList;
   }
 
+  const checkValid = (field, updateErrors) => {
+    const { name, val } = field;
+    if (val === '') {
+      updateErrors(name, `Please make a selection for ${name}`)
+    } else {
+      updateErrors(name, '')
+    }
+  }
 
+  const updateErrors = (name, errorMessage) => {
+    switch(name) {
+      case 'term':
+        if(term['val'] === '') {
+          setTerm({
+            ...term,
+            [`error`]: errorMessage
+          })
+        } else {
+          setTerm({
+            ...term,
+            [`error`]: ''
+          })
+        }
+        return
+      default:
+        return
+    }
+  }
 
   const saveProgress = () => {
-    const validateList = [
-      {[`${Object.keys({term})[0]}`]: term},
-      {[`${Object.keys({courseNumber})[0]}`]: courseNumber},
-      {[`${Object.keys({librarian})[0]}`]: librarian}
-    ]
-
-    // Object.keys(validateList[0]).forEach(item => {
-    //   console.log(item)
-    //   console.log(validateList[0][item])
-    // })
+    const validateList = [term, courseNumber];
 
     validateList.forEach(item => {
-      Object.keys(item).forEach(name => {
-        // validateItem(name, item[name], 'selection');
-        console.log(item[name])
-        console.log(name);
-        buildErrorList(validateSelection(item[name]), name, `${name} must have a value selected`)
-      })
+      checkValid(item, updateErrors)
     })
-  }
 
-  const validateItem = (itemName, itemValue, errorTypeCheck) => {
-    if(errorTypeCheck === 'presence') {
-      buildErrorList(validateSelection(itemValue), itemName, `${itemName} must have a value entered`)
-    } else if(errorTypeCheck === 'selection') {
-      buildErrorList(validateSelection(itemValue), itemName, `${itemName} must have a value selected`)
-    } else {
-      return null
-    }
-  }
+    
 
+    
 
-  const buildErrorList = (result, name, errorType) => {
-    if(result === false) {
-      setErrorList(errorList => [...errorList, {[name]: errorType}])
-    // } else {
-    //   const newErrorList = Object.keys(errorList).reduce((object, key) => {
-    //     console.log(object)
-    //     if(key !== `${name}Error`) {
-    //       object[key] = errorList[key]
-    //     }
-    //     return object
-    //   }, {})
-
-    //   setErrorList({...newErrorList})
-    }
+    // 
   }
 
   return (
@@ -103,38 +103,40 @@ const Lesson = () => {
         <Form>
           <FormGroup>
             <Label for='term'>Term</Label>
-            <Input type='select' name='term' id='term' value={term} onChange={e => setTerm(e.target.value)} invalid={errorList['term'] ? true : false}>
+            <Input type='select' name='term' id='term' value={term['val']} onChange={e => setTerm({ ...term, [`val`]: e.target.value})} invalid={term['error'] !== '' ? true : false}>
               <option value=''>Select a Term</option>
               <option value='Fall 2019'>Fall 2019</option>
               <option value='Spring 2020'>Spring 2020</option>
             </Input>
-            <FormFeedback>{errorList['term']}</FormFeedback>
+            <FormFeedback>{term.error}</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='courseNumber'>Course Number</Label>
-            <Input type='select' name='courseNumber' id='courseNumber' value={courseNumber} onChange={e => setCourseNumber(e.target.value)} disabled={term === ''} invalid={errorList['courseNumber'] ? true : false}>
+            <Input type='select' name='courseNumber' id='courseNumber' value={courseNumber['val']} onChange={e => setCourseNumber({ ...courseNumber, [`val`]: e.target.value})} disabled={term === ''} invalid={courseNumber['error'] !== '' ? true : false}>
               <option value=''>Select a Course Number</option>
-              {getCourses(term)}
+              {getCourses(term['val'])}
             </Input>
-            <FormFeedback>{errorList['courseNumber']}</FormFeedback>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='courseTitle'>Course Title</Label>
-            <Input type="text" name="courseTitle" id="courseTitle" placeholder="Course Title" value={courseTitle} onChange={e => setCourseTitle(e.target.value)} />
+            <Input type="text" name="courseTitle" id="courseTitle" placeholder="Course Title" value={courseTitle} onChange={e => setCourseTitle(e.target.value)} invalid={courseTitle === '' ? true : false} />
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='faculty'>Faculty</Label>
-            <Input type="text" name="faculty" id="faculty" placeholder="Faculty Name" value={faculty} onChange={e => setFaculty(e.target.value)} />
+            <Input type="text" name="faculty" id="faculty" placeholder="Faculty Name" value={faculty} onChange={e => setFaculty(e.target.value)} invalid={faculty === '' ? true : false}/>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='librarian'>Librarian</Label>
-            <Input type='select' name='librarian' id='librarian' placeholder='Librarian' value={librarian} onChange={e => setLibrarian(e.target.value)} invalid={errorList['librarian'] ? true : false}>
+            <Input type='select' name='librarian' id='librarian' placeholder='Librarian' value={librarian} onChange={e => setLibrarian(e.target.value)} invalid={librarian === '' ? true : false}>
               <option value=''>Select a Librarian</option>
               {librarians.map(librarian => {
                 return <option key={librarian.id} value={librarian.name}>{librarian.name}</option>
               })}
             </Input>
-            <FormFeedback>{errorList['librarian']}</FormFeedback>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='coInstructor'>Co-Instructor</Label>
