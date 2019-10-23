@@ -1,46 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import { Row, Col } from 'reactstrap';
-import { Form, FormGroup, FormFeedback, Label, Input, Button, Alert } from 'reactstrap';
+import { Form, FormGroup, FormFeedback, Label, Input, Alert } from 'reactstrap';
 
 import courses from '../../data/courses';
 import librarians from '../../data/librarians';
 
-import { timeIntervals, setIntervals, validatePresence, validateSelection } from '../../utilities/utilities';
+import { timeIntervals, setIntervals } from '../../utilities/utilities';
 
 const Lesson = () => {
   const [validForm, setValidForm] = useState(true);
-  const [term, setTerm] = useState({
-    name: 'term',
-    val: '',
-    error: ''
+  const [state, setState] = useState({
+    term: '',
+    courseNumber: '',
+    courseTitle: '',
+    faculty: '',
+    librarian: '',
+    coInstructor: '',
+    date: '',
+    startTime: '',
+    duration: '',
+    studentCount: ''
   });
-  const [courseNumber, setCourseNumber] = useState({
-    name: 'course number',
-    val: '',
-    error: ''
-  });
-  const [courseTitle, setCourseTitle] = useState('');
-  const [faculty, setFaculty] = useState('');
-  const [librarian, setLibrarian] = useState('');
-  const [coInstructor, setCoInstructor] = useState('');
-  const [date, setDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [duration, setDuration] = useState('');
-  const [studentCount, setStudentCount] = useState('');
 
   useEffect(() => {
-    const updateCourseInfo = courseNumber => {
-      const { val } = courseNumber;
-      const thisCourse = courses.find(course => course.courseNumber === val);
+    const updateCourseInfo = (courseNumber) => {
+      const thisCourse = courses.find(course => course.courseNumber === courseNumber);
 
       if(thisCourse) {
-        setCourseTitle(thisCourse.courseTitle)
-        setFaculty(thisCourse.faculty)
+        setState(state => state = {...state, [`courseTitle`]: thisCourse['courseTitle'], [`faculty`]: thisCourse['faculty'] })
+        document.getElementById('courseTitle').className = 'form-control is-valid';
+        document.getElementById('faculty').className = 'form-control is-valid';
       }
     }
-    updateCourseInfo(courseNumber) 
-  }, [courseNumber]);
+    updateCourseInfo(state.courseNumber) 
+  }, [state.courseNumber]);
 
   const getCourses = term => {
     const courseList = courses.map(course => {
@@ -53,102 +47,97 @@ const Lesson = () => {
     return courseList;
   }
 
-  const checkValid = (field, updateErrors) => {
-    const { name, val } = field;
-    if (val === '') {
-      updateErrors(name, `Please make a selection for ${name}`)
-    } else {
-      updateErrors(name, '')
-    }
-  }
+  const handleChange = event => {
+    const { name, value } = event.target
 
-  const updateErrors = (name, errorMessage) => {
-    switch(name) {
-      case 'term':
-        if(term['val'] === '') {
-          setTerm({
-            ...term,
-            [`error`]: errorMessage
-          })
-        } else {
-          setTerm({
-            ...term,
-            [`error`]: ''
-          })
-        }
-        return
-      default:
-        return
-    }
-  }
-
-  const saveProgress = () => {
-    const validateList = [term, courseNumber];
-
-    validateList.forEach(item => {
-      checkValid(item, updateErrors)
+    setState({
+      ...state,
+      [name]: value
     })
 
-    
+    if(value === '') {
+      event.target.className = 'form-control is-invalid';
+    } else {
+      event.target.className = 'form-control is-valid';
+    }
+  }
 
-    
+  const handleSubmit = event => {
+    event.preventDefault();
 
-    // 
+    let errors = 0;
+    let invalidInputs = document.getElementById('form-step-one').getElementsByClassName('check-valid');
+    
+    for(let key in invalidInputs) {
+      if(key !== 'length') {
+        let input = invalidInputs[key]
+        if(input.value === '') {
+          input.className='check-valid form-control is-invalid'
+          errors = errors + 1
+        } else {
+          input.className='check-valid form-control is-valid'
+          errors = errors - 1
+        }
+      }
+    }
+
+    console.log(errors);
+    if(errors > 0) {
+      setValidForm(false)
+    }
   }
 
   return (
     <Row>
       <Col>
         {validForm ? '' : <Alert color="danger">Please Fix the Errors in the Form</Alert>}        
-        <Form>
+        <Form onSubmit={handleSubmit} id='form-step-one'>
           <FormGroup>
             <Label for='term'>Term</Label>
-            <Input type='select' name='term' id='term' value={term['val']} onChange={e => setTerm({ ...term, [`val`]: e.target.value})} invalid={term['error'] !== '' ? true : false}>
+            <Input className='check-valid' type='select' name='term' id='Term' value={state['term']} onChange={handleChange}>
               <option value=''>Select a Term</option>
               <option value='Fall 2019'>Fall 2019</option>
               <option value='Spring 2020'>Spring 2020</option>
             </Input>
-            <FormFeedback>{term.error}</FormFeedback>
+            <FormFeedback>Please correct the error</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='courseNumber'>Course Number</Label>
-            <Input type='select' name='courseNumber' id='courseNumber' value={courseNumber['val']} onChange={e => setCourseNumber({ ...courseNumber, [`val`]: e.target.value})} disabled={term === ''} invalid={courseNumber['error'] !== '' ? true : false}>
+            <Input className='check-valid' type='select' name='courseNumber' id='courseNumber' value={state['courseNumber']} onChange={handleChange} disabled={state['term'] === ''}>
               <option value=''>Select a Course Number</option>
-              {getCourses(term['val'])}
+              {getCourses(state['term'])}
             </Input>
-            <FormFeedback>Please make a selection</FormFeedback>
+            <FormFeedback>Please correct the error</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='courseTitle'>Course Title</Label>
-            <Input type="text" name="courseTitle" id="courseTitle" placeholder="Course Title" value={courseTitle} onChange={e => setCourseTitle(e.target.value)} invalid={courseTitle === '' ? true : false} />
-            <FormFeedback>Please make a selection</FormFeedback>
+            <Input className='check-valid' type="text" name="courseTitle" id="courseTitle" placeholder="Course Title" value={state['courseTitle']} onChange={handleChange} />
           </FormGroup>
           <FormGroup>
             <Label for='faculty'>Faculty</Label>
-            <Input type="text" name="faculty" id="faculty" placeholder="Faculty Name" value={faculty} onChange={e => setFaculty(e.target.value)} invalid={faculty === '' ? true : false}/>
-            <FormFeedback>Please make a selection</FormFeedback>
+            <Input className='check-valid' type="text" name="faculty" id="faculty" placeholder="Faculty Name" value={state['faculty']} onChange={handleChange} />
           </FormGroup>
           <FormGroup>
             <Label for='librarian'>Librarian</Label>
-            <Input type='select' name='librarian' id='librarian' placeholder='Librarian' value={librarian} onChange={e => setLibrarian(e.target.value)} invalid={librarian === '' ? true : false}>
+            <Input className='check-valid' type='select' name='librarian' id='librarian' placeholder='Librarian' value={state['librarian']} onChange={handleChange}>
               <option value=''>Select a Librarian</option>
               {librarians.map(librarian => {
                 return <option key={librarian.id} value={librarian.name}>{librarian.name}</option>
               })}
             </Input>
-            <FormFeedback>Please make a selection</FormFeedback>
+            <FormFeedback>error</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='coInstructor'>Co-Instructor</Label>
-            <Input type="text" name="coInstructor" id="coInstructor" placeholder="Co-Instructor" value={coInstructor} onChange={e => setCoInstructor(e.target.value)} />
+            <Input type="text" name="coInstructor" id="coInstructor" placeholder="Co-Instructor" value={state['coInstructor']} onChange={handleChange} />
           </FormGroup>
           <FormGroup>
             <Label for='date'>Date</Label>
-            <Input type="date" name="date" id="date" placeholder="mm/dd/yy" value={date} onChange={e => setDate(e.target.value)} />
+            <Input type="date" name="date" id="date" placeholder="mm/dd/yy" value={state['date']} onChange={handleChange} />
           </FormGroup>
           <FormGroup>
             <Label for='startTime'>Start Time</Label>
-            <Input type="select" name="startTime" id="startTime" value={startTime} onChange={e => setStartTime(e.target.value)}>
+            <Input type="select" name="startTime" id="startTime" value={state['startTime']} onChange={handleChange}>
               <option value=''>Make a Selection</option>
               {timeIntervals(8, 20).map(interval => {
                 return <option key={interval} value={interval}>{interval}</option>
@@ -157,7 +146,7 @@ const Lesson = () => {
           </FormGroup>
           <FormGroup>
             <Label for='duration'>Duration</Label>
-            <Input type="select" name="duration" id="duration" value={duration} onChange={e => setDuration(e.target.value)}>
+            <Input type="select" name="duration" id="duration" value={state['duration']} onChange={handleChange}>
               <option value=''>Make a Selection</option>
               {setIntervals(5, 75, 5).map(interval => {
                 return <option key={interval} value={interval}>{interval}</option>
@@ -166,7 +155,7 @@ const Lesson = () => {
           </FormGroup>
           <FormGroup>
             <Label for="studentCount">Number of Students</Label>
-            <Input type="select" name="studentCount" id="studentCount" value={studentCount} onChange={e => setStudentCount(e.target.value)}>
+            <Input type="select" name="studentCount" id="studentCount" value={state['studentCount']} onChange={handleChange}>
               <option value="0">Make a Selection</option>
               {setIntervals(1, 35, 1).map(interval => {
                 return <option key={interval} value={interval}>{interval}</option>
@@ -174,8 +163,8 @@ const Lesson = () => {
             </Input>
           </FormGroup>
           <Row form>
-            <Col md={12} className='text-right'>
-              <Button color="primary" onClick={saveProgress}>Next Step</Button>
+            <Col md={{size: 2, offset: 10}} className='text-right'>
+              <Input type='submit' className='btn btn-primary' value='Next Step' />
             </Col>
           </Row>
         </Form>
