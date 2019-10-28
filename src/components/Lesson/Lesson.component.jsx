@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Row, Col } from 'reactstrap';
 import { Form, FormGroup, FormFeedback, Label, Input, Alert } from 'reactstrap';
@@ -29,8 +29,8 @@ const Lesson = () => {
 
       if(thisCourse) {
         setState(state => state = {...state, [`courseTitle`]: thisCourse['courseTitle'], [`faculty`]: thisCourse['faculty'] })
-        document.getElementById('courseTitle').className = 'form-control is-valid';
-        document.getElementById('faculty').className = 'form-control is-valid';
+        document.getElementById('courseTitle').className = 'check-valid form-control is-valid';
+        document.getElementById('faculty').className = 'check-valid form-control is-valid';
       }
     }
     updateCourseInfo(state.courseNumber) 
@@ -56,9 +56,13 @@ const Lesson = () => {
     })
 
     if(value === '') {
-      event.target.className = 'form-control is-invalid';
+      if(name === 'coInstructor') {
+        event.target.className = 'form-control';
+      } else {
+        event.target.className = 'check-valid form-control is-invalid';
+      }
     } else {
-      event.target.className = 'form-control is-valid';
+      event.target.className = 'check-valid form-control is-valid';
     }
   }
 
@@ -68,22 +72,21 @@ const Lesson = () => {
     let errors = 0;
     let invalidInputs = document.getElementById('form-step-one').getElementsByClassName('check-valid');
     
-    for(let key in invalidInputs) {
-      if(key !== 'length') {
-        let input = invalidInputs[key]
-        if(input.value === '') {
-          input.className='check-valid form-control is-invalid'
-          errors = errors + 1
-        } else {
-          input.className='check-valid form-control is-valid'
-          errors = errors - 1
-        }
+    for (let input of invalidInputs) {
+      if(input.value === '') {
+        input.className='check-valid form-control is-invalid'
+        errors = errors + 1
+      } else {
+        input.className='check-valid form-control is-valid'
       }
     }
 
     console.log(errors);
+
     if(errors > 0) {
       setValidForm(false)
+    } else {
+      setValidForm(true)
     }
   }
 
@@ -99,7 +102,7 @@ const Lesson = () => {
               <option value='Fall 2019'>Fall 2019</option>
               <option value='Spring 2020'>Spring 2020</option>
             </Input>
-            <FormFeedback>Please correct the error</FormFeedback>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='courseNumber'>Course Number</Label>
@@ -107,15 +110,17 @@ const Lesson = () => {
               <option value=''>Select a Course Number</option>
               {getCourses(state['term'])}
             </Input>
-            <FormFeedback>Please correct the error</FormFeedback>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='courseTitle'>Course Title</Label>
-            <Input className='check-valid' type="text" name="courseTitle" id="courseTitle" placeholder="Course Title" value={state['courseTitle']} onChange={handleChange} />
+            <Input className='check-valid' type="text" name="courseTitle" id="courseTitle" placeholder="Course Title" value={state['courseTitle']} onChange={handleChange} disabled={state['courseNumber'] === ''} />
+            <FormFeedback>Please enter a course title</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='faculty'>Faculty</Label>
-            <Input className='check-valid' type="text" name="faculty" id="faculty" placeholder="Faculty Name" value={state['faculty']} onChange={handleChange} />
+            <Input className='check-valid' type="text" name="faculty" id="faculty" placeholder="Faculty Name" value={state['faculty']} onChange={handleChange} disabled={state['courseNumber'] === ''} />
+            <FormFeedback>Please enter a faculty name</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='librarian'>Librarian</Label>
@@ -125,42 +130,46 @@ const Lesson = () => {
                 return <option key={librarian.id} value={librarian.name}>{librarian.name}</option>
               })}
             </Input>
-            <FormFeedback>error</FormFeedback>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
-          <FormGroup>
-            <Label for='coInstructor'>Co-Instructor</Label>
+          <FormGroup>            
+            <Label for='coInstructor'>Co-Instructor <small>(* optional)</small></Label>
             <Input type="text" name="coInstructor" id="coInstructor" placeholder="Co-Instructor" value={state['coInstructor']} onChange={handleChange} />
           </FormGroup>
           <FormGroup>
             <Label for='date'>Date</Label>
-            <Input type="date" name="date" id="date" placeholder="mm/dd/yy" value={state['date']} onChange={handleChange} />
+            <Input className='check-valid' type="date" name="date" id="date" placeholder="mm/dd/yy" value={state['date']} onChange={handleChange} />
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='startTime'>Start Time</Label>
-            <Input type="select" name="startTime" id="startTime" value={state['startTime']} onChange={handleChange}>
+            <Input className='check-valid' type="select" name="startTime" id="startTime" value={state['startTime']} onChange={handleChange}>
               <option value=''>Make a Selection</option>
               {timeIntervals(8, 20).map(interval => {
                 return <option key={interval} value={interval}>{interval}</option>
               })}
             </Input>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for='duration'>Duration</Label>
-            <Input type="select" name="duration" id="duration" value={state['duration']} onChange={handleChange}>
+            <Input className='check-valid' type="select" name="duration" id="duration" value={state['duration']} onChange={handleChange}>
               <option value=''>Make a Selection</option>
               {setIntervals(5, 75, 5).map(interval => {
                 return <option key={interval} value={interval}>{interval}</option>
               })}
             </Input>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <FormGroup>
             <Label for="studentCount">Number of Students</Label>
-            <Input type="select" name="studentCount" id="studentCount" value={state['studentCount']} onChange={handleChange}>
-              <option value="0">Make a Selection</option>
+            <Input className='check-valid' type="select" name="studentCount" id="studentCount" value={state['studentCount']} onChange={handleChange}>
+              <option value=''>Make a Selection</option>
               {setIntervals(1, 35, 1).map(interval => {
                 return <option key={interval} value={interval}>{interval}</option>
               })}
             </Input>
+            <FormFeedback>Please make a selection</FormFeedback>
           </FormGroup>
           <Row form>
             <Col md={{size: 2, offset: 10}} className='text-right'>
