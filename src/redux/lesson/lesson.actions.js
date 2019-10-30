@@ -1,4 +1,9 @@
-import { UPDATE_LESSON, UPDATE_LESSON_FIELD } from './lesson.types';
+import { UPDATE_LESSON, UPDATE_LESSON_FIELD, UPDATE_LESSON_FIELD_ARRAY } from './lesson.types';
+
+export const updateLessonFieldArray = (field, value) => ({
+  type: UPDATE_LESSON_FIELD_ARRAY,
+  payload: { field, value }
+})
 
 export const updateLessonField = (field, value) => ({
   type: UPDATE_LESSON_FIELD,

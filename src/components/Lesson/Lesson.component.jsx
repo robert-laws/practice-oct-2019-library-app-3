@@ -46,7 +46,7 @@ const Lesson = (props) => {
   const handleSubmit = event => {
     event.preventDefault();
 
-    
+    props.history.push('/lesson-step-two');
   }
 
   return (

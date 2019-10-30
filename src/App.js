@@ -2,6 +2,7 @@ import React from 'react';
 import { Switch, Route, Link } from 'react-router-dom';
 
 import Lesson from './components/Lesson/Lesson.component';
+import LessonStepTwo from './components/Lesson.StepTwo/Lesson.StepTwo.component.jsx';
 
 import { Container } from 'reactstrap';
 
@@ -17,6 +18,7 @@ function App() {
       
       <Switch>
         <Route path='/lesson' component={Lesson} />
+        <Route path='/lesson-step-two' component={LessonStepTwo} />
       </Switch>
 
     </Container>
