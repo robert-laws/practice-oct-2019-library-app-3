@@ -1,4 +1,4 @@
-import { UPDATE_LESSON } from './lesson.types';
+import { UPDATE_LESSON, UPDATE_LESSON_FIELD } from './lesson.types';
 
 const INITIAL_STATE = {
   term: '',
@@ -18,6 +18,11 @@ const lessonReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         ...action.payload
+      }
+    case UPDATE_LESSON_FIELD:
+      return {
+        ...state,
+        [action.payload.field]: action.payload.value
       }
     default:
       return state
