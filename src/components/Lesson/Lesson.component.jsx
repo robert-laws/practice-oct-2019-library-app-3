@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import { updateLesson } from '../../redux/lesson/lesson.actions';
 
 import { Row, Col } from 'reactstrap';
 import { Form, FormGroup, FormFeedback, Label, Input, Alert } from 'reactstrap';
@@ -8,7 +10,9 @@ import librarians from '../../data/librarians';
 
 import { timeIntervals, setIntervals } from '../../utilities/utilities';
 
-const Lesson = () => {
+const Lesson = (props) => {
+  const { onUpdateLesson } = props;
+
   const [validForm, setValidForm] = useState(true);
   const [state, setState] = useState({
     term: '',
@@ -85,8 +89,11 @@ const Lesson = () => {
 
     if(errors > 0) {
       setValidForm(false)
+      // errors need to be fixed
     } else {
       setValidForm(true)
+      // no errors - write data to redux, redirect user
+      onUpdateLesson(state);
     }
   }
 
@@ -182,4 +189,10 @@ const Lesson = () => {
   )
 }
 
-export default Lesson;
+const mapDispatchToProps = dispatch => {
+  return {
+    onUpdateLesson: lesson => dispatch(updateLesson(lesson))
+  }
+}
+
+export default connect(null, mapDispatchToProps)(Lesson);

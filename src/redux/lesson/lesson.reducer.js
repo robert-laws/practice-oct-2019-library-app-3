@@ -17,7 +17,7 @@ const lessonReducer = (state = INITIAL_STATE, action) => {
     case UPDATE_LESSON:
       return {
         ...state,
-        [action.payload.field]: action.payload.value
+        ...action.payload
       }
     default:
       return state

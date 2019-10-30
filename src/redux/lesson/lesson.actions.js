@@ -1,6 +1,6 @@
 import { UPDATE_LESSON } from './lesson.types';
 
-export const updateLesson = (field, value) => ({
+export const updateLesson = (lesson) => ({
   type: UPDATE_LESSON,
-  payload: { field, value }
+  payload: lesson
 })
